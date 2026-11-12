@@ -11,6 +11,11 @@ export const authenticate = (
   next: NextFunction,
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  console.log("HEADER COMPLETO:", authHeader);
+  console.log("TOKEN RICEVUTO:", token);
+  console.log("JWT SECRET:", process.env.JWT_SECRET);
+  console.log("TOKEN ESTRATTO:", token);
 
   if (!token) {
     res.status(401).json({ error: "Token mancante" });
@@ -24,7 +29,8 @@ export const authenticate = (
     };
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
+    console.log("ERRORE JWT:", err);
     res.status(401).json({ error: "Token non valido" });
   }
 };
