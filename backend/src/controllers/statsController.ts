@@ -98,3 +98,31 @@ export const getStatsByDay = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: "Errore server" });
   }
 };
+
+export const getTeamStats = async (req: AuthRequest, res: Response) => {
+  const owner_id = req.user!.id;
+
+  try {
+    const result = await pool.query(
+      `SELECT
+        u.name as user_name,
+        COALESCE(ROUND(SUM(CASE 
+          WHEN s.started_at >= date_trunc('week', NOW())
+          THEN s.duration_minutes END) / 60.0, 1), 0) AS hours_this_week,
+        COALESCE(ROUND(SUM(s.duration_minutes) / 60.0, 1), 0) AS hours_total
+      FROM users u
+      JOIN project_members pm ON pm.user_id = u.id
+      JOIN projects p ON p.id = pm.project_id
+      LEFT JOIN sessions s ON s.user_id = u.id 
+        AND s.ended_at IS NOT NULL
+      WHERE p.owner_id = $1
+      GROUP BY u.id, u.name
+      ORDER BY hours_this_week DESC`,
+      [owner_id],
+    );
+
+    res.json({ team: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: "Errore server" });
+  }
+};
