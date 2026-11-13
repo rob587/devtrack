@@ -43,3 +43,29 @@ export const getMyStats = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: "Errore server" });
   }
 };
+
+export const getStatsByProject = async (req: AuthRequest, res: Response) => {
+  const user_id = req.user!.id;
+
+  try {
+    const result = await pool.query(
+      `SELECT 
+        p.name as project_name,
+        COALESCE(SUM(s.duration_minutes), 0) as total_minutes,
+        ROUND(COALESCE(SUM(s.duration_minutes), 0) / 60.0, 1) as total_hours
+      FROM projects p
+      JOIN project_members pm ON pm.project_id = p.id
+      LEFT JOIN sessions s ON s.project_id = p.id 
+        AND s.user_id = $1 
+        AND s.ended_at IS NOT NULL
+      WHERE pm.user_id = $1
+      GROUP BY p.id, p.name
+      ORDER BY total_minutes DESC`,
+      [user_id],
+    );
+
+    res.json({ projects: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: "Errore server" });
+  }
+};
