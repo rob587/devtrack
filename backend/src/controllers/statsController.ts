@@ -69,3 +69,32 @@ export const getStatsByProject = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: "Errore server" });
   }
 };
+
+export const getStatsByDay = async (req: AuthRequest, res: Response) => {
+  const user_id = req.user!.id;
+
+  try {
+    const result = await pool.query(
+      `SELECT
+        gs.day::date as date,
+        TO_CHAR(gs.day, 'Dy') as label,
+        COALESCE(ROUND(SUM(s.duration_minutes) / 60.0, 1), 0) as hours
+      FROM generate_series(
+        NOW() - INTERVAL '6 days',
+        NOW(),
+        '1 day'
+      ) AS gs(day)
+      LEFT JOIN sessions s 
+        ON s.started_at::date = gs.day::date
+        AND s.user_id = $1
+        AND s.ended_at IS NOT NULL
+      GROUP BY gs.day
+      ORDER BY gs.day ASC`,
+      [user_id],
+    );
+
+    res.json({ days: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: "Errore server" });
+  }
+};
