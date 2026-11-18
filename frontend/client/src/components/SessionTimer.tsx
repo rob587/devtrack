@@ -45,6 +45,37 @@ const SessionTimer = () => {
     return `${h}:${m}:${s}`;
   };
 
+  const handleStart = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await api.post("/sessions/start", {
+        project_id: parseInt(selectedProject),
+        description,
+      });
+      setActiveSession(res.data.session);
+      setElapsed(0);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Errore");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStop = async () => {
+    setLoading(true);
+    try {
+      await api.patch("/sessions/stop");
+      setActiveSession(null);
+      setElapsed(0);
+      window.location.reload(); // ricarica per aggiornare le stats
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Errore");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return <div>SessionTimer</div>;
 };
 
