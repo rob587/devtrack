@@ -76,7 +76,62 @@ const SessionTimer = () => {
     }
   };
 
-  return <div>SessionTimer</div>;
+  return (
+    <>
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <h2 className="text-slate-200 font-semibold text-lg mb-4">⏱ Timer</h2>
+
+        {activeSession ? (
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-slate-400 text-sm">
+              Sessione attiva su{" "}
+              <span className="text-indigo-400">
+                {activeSession.project_name}
+              </span>
+            </p>
+            <p className="text-5xl font-mono font-bold text-white">
+              {formatElapsed(elapsed)}
+            </p>
+            <button
+              onClick={handleStop}
+              disabled={loading}
+              className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-lg px-6 py-2 transition cursor-pointer"
+            >
+              ⏹ Stoppa
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="bg-slate-900 text-slate-100 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
+            >
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="bg-slate-900 text-slate-100 placeholder-slate-500 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              placeholder="Descrizione (opzionale)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <button
+              onClick={handleStart}
+              disabled={loading || !selectedProject}
+              className="bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold rounded-lg py-2 text-sm transition cursor-pointer"
+            >
+              ▶ Avvia sessione
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default SessionTimer;
