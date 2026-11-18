@@ -25,6 +25,26 @@ const SessionTimer = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (!activeSession) return;
+    const start = new Date(activeSession.started_at).getTime();
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [activeSession]);
+
+  const formatElapsed = (seconds: number) => {
+    const h = Math.floor(seconds / 3600)
+      .toString()
+      .padStart(2, "0");
+    const m = Math.floor((seconds % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
   return <div>SessionTimer</div>;
 };
 
