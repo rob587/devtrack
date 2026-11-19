@@ -31,7 +31,43 @@ const RecentSessions = () => {
     });
   };
 
-  return <div>RecentSessions</div>;
+  return (
+    <>
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <h2 className="text-slate-200 font-semibold text-lg mb-4">
+          🕐 Sessioni recenti
+        </h2>
+
+        {sessions.length === 0 ? (
+          <p className="text-slate-500 text-sm">
+            Nessuna sessione ancora. Avvia il timer!
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className="flex items-center justify-between py-3 border-b border-slate-700 last:border-0"
+              >
+                <div>
+                  <p className="text-slate-200 text-sm font-medium">
+                    {session.project_name}
+                  </p>
+                  <p className="text-slate-500 text-xs mt-0.5">
+                    {session.description || "Nessuna descrizione"} ·{" "}
+                    {formatDate(session.started_at)}
+                  </p>
+                </div>
+                <span className="text-indigo-400 font-semibold text-sm">
+                  {formatDuration(session.duration_minutes!)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default RecentSessions;
