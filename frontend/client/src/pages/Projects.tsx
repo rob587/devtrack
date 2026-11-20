@@ -10,6 +10,36 @@ const Projects = () => {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
 
+  const fetchProjects = () => {
+    api.get("/projects/mine").then((res) => setProjects(res.data.projects));
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await api.post("/projects", form);
+      setForm({ name: "", description: "" });
+      setShowForm(false);
+      fetchProjects();
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Errore");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return <div>Projects</div>;
 };
 
