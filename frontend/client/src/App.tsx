@@ -4,6 +4,7 @@ import { ReactElement } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
 
 const PrivateRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated } = useAuth();
@@ -24,6 +25,14 @@ function App() {
         }
       />
       <Route path="*" element={<Navigate to="/login" />} />
+      <Route
+        path="/projects"
+        element={
+          <PrivateRoute>
+            <Projects />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 }
