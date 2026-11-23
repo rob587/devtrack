@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
+import Team from "./pages/Team";
 
 const PrivateRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated } = useAuth();
@@ -30,6 +31,14 @@ function App() {
         element={
           <PrivateRoute>
             <Projects />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/team"
+        element={
+          <PrivateRoute>
+            <Team />
           </PrivateRoute>
         }
       />
