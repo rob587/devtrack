@@ -1,6 +1,7 @@
 import { Response } from "express";
 import pool from "../db/index";
 import { AuthRequest } from "../middlewares/auth";
+import { io } from "../index";
 
 export const startSession = async (req: AuthRequest, res: Response) => {
   const { project_id, description } = req.body;
@@ -34,12 +35,16 @@ export const startSession = async (req: AuthRequest, res: Response) => {
       [user_id, project_id, description],
     );
 
+    // Notifica il client che la sessione è iniziata
+    io.to(`user_${user_id}`).emit("session_started", result.rows[0]);
+
     res.status(201).json({ session: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: "Errore server" });
   }
 };
 
+// Stoppa la sessione attiva
 export const stopSession = async (req: AuthRequest, res: Response) => {
   const user_id = req.user!.id;
 
@@ -66,6 +71,9 @@ export const stopSession = async (req: AuthRequest, res: Response) => {
       [duration_minutes, session.id],
     );
 
+    // Notifica il client — aggiorna stats e sessioni senza reload
+    io.to(`user_${user_id}`).emit("session_stopped", result.rows[0]);
+
     res.json({ session: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: "Errore server" });
@@ -74,7 +82,6 @@ export const stopSession = async (req: AuthRequest, res: Response) => {
 
 export const getMySessions = async (req: AuthRequest, res: Response) => {
   const user_id = req.user!.id;
-
   try {
     const result = await pool.query(
       `SELECT s.*, p.name as project_name 
@@ -84,7 +91,6 @@ export const getMySessions = async (req: AuthRequest, res: Response) => {
        ORDER BY s.started_at DESC`,
       [user_id],
     );
-
     res.json({ sessions: result.rows });
   } catch (err) {
     res.status(500).json({ error: "Errore server" });
@@ -93,7 +99,6 @@ export const getMySessions = async (req: AuthRequest, res: Response) => {
 
 export const getTeamSessions = async (req: AuthRequest, res: Response) => {
   const user_id = req.user!.id;
-
   try {
     const result = await pool.query(
       `SELECT s.*, u.name as user_name, p.name as project_name
@@ -104,7 +109,6 @@ export const getTeamSessions = async (req: AuthRequest, res: Response) => {
        ORDER BY s.started_at DESC`,
       [user_id],
     );
-
     res.json({ sessions: result.rows });
   } catch (err) {
     res.status(500).json({ error: "Errore server" });
