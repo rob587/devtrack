@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { User } from "../types";
+import socket from "../socket";
 
 interface AuthContextType {
   user: User | null;
@@ -25,8 +26,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
     if (savedToken && savedUser) {
+      const parsedUser = JSON.parse(savedUser);
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(parsedUser);
+
+      socket.connect();
+      socket.emit("join", parsedUser.id);
     }
   }, []);
 
@@ -35,6 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(user));
     setToken(token);
     setUser(user);
+    socket.connect();
+    socket.emit("join", user.id);
   };
 
   const logout = () => {
@@ -42,17 +49,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
+    socket.disconnect();
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        token,
-        login,
-        logout,
-        isAuthenticated: !!token,
-      }}
+      value={{ user, token, login, logout, isAuthenticated: !!token }}
     >
       {children}
     </AuthContext.Provider>
