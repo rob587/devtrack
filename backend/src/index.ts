@@ -1,14 +1,23 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import authRoutes from "./routes/auth";
 import projectRoutes from "./routes/projects";
 import sessionRoutes from "./routes/session";
 import statsRoutes from "./routes/stats";
 
-dotenv.config();
-
 const app = express();
+const httpServer = createServer(app);
+
+export const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PATCH"],
+  },
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -20,9 +29,23 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/stats", statsRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "Devtrack è avviato" });
+  res.json({ message: "DevTrack API running 🚀" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server aperto nella porta: ${PORT}`);
+io.on("connection", (socket) => {
+  console.log("Client connesso:", socket.id);
+
+  // Il client si unisce a una "room" col suo user_id
+  socket.on("join", (userId: number) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnesso:", socket.id);
+  });
+});
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
