@@ -68,7 +68,6 @@ const SessionTimer = () => {
       await api.patch("/sessions/stop");
       setActiveSession(null);
       setElapsed(0);
-      window.location.reload(); // ricarica per aggiornare le stats
     } catch (err: any) {
       setError(err.response?.data?.error || "Errore");
     } finally {
